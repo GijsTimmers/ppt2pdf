@@ -1,0 +1,59 @@
+#!python
+# -*- coding: utf-8 -*-
+## Author:          Gijs Timmers: https://github.com/GijsTimmers
+## Adapted from K. Scott Allen's post on
+## http://odetocode.com/blogs/scott/archive/2013/06/26/
+## convert-a-directory-of-powerpoint-slides-to-pdf-with-python.aspx
+## More information: http://odetocode.com/about/scott-allen#kscott
+##
+## and tzot's answer on 
+## http://stackoverflow.com/questions/600268/mkdir-p-functionality-in-python
+## More information: http://stackoverflow.com/users/6899/tzot
+
+## Dependencies: pywin32
+## pip install pypiwin23
+## Or visit https://pypi.python.org/pypi/pypiwin32
+
+## Usage:
+## Go into a directory containing ppt and/or pptx files.
+## Now run ppt_to_pdf.py. It will find the ppt and pptx
+## files automatically.
+## A directory called 'pdf' will be created if it doesn't exist yet.
+## The pdf files will be put in here.
+
+import sys
+import os
+import glob
+import win32com.client
+ 
+import os, errno
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc: # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else: raise 
+ 
+def convert(files, formatType = 32):
+    powerpoint = win32com.client.Dispatch("Powerpoint.Application")
+    powerpoint.Visible = 1
+    
+    mkdir_p("pdf")
+
+    for filename in files:
+        fullfilename = os.path.join(os.getcwd(), filename)
+        newname = os.path.splitext(filename)[0] + ".pdf"
+        fullnewname = os.path.join(os.getcwd(), "pdf", newname)
+        
+        print("In:  " + filename)
+        deck = powerpoint.Presentations.Open(fullfilename)        
+        deck.SaveAs(fullnewname, formatType)
+        print("Out: " + newname)
+        print("")
+        deck.Close()
+    powerpoint.Quit()
+ 
+files = glob.glob("*.ppt") + glob.glob("*.pptx")
+convert(files)
